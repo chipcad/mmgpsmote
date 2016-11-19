@@ -1,34 +1,35 @@
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-'           V2_Micromite_Mote_25.bas
-' July 17
-' July 19 improving COM port selection
-' July 20 CO2 sensor service mode for COM3/COM4
-' July 21 short button press to upload sensor data, long for changing GPS / sensor modes
-' July 22 continue sensor mode
-' July 23 continue sensor mode
-' July 24 continue sensor mode + altitude calculation fix
-' August 1/2 continue sensor mode
-' August 3 push button by polling
-' August 7 external humidity, temperature and CO2 option
-' August 10 power consumption optimization
-' August 11 MCP9800 one-shot measurement
-' August 14 power consumption optimization and final port selection
-' August 29 switch off LEDS before cpu sleep 
-' September 3 RN2483 read by timeout, red flash during transmission and green flash before
-' October 2 small message changes
-' October 17 "C" channel set service mode bug fix, batter
-' October 23 buzzer to RB2
-' November 5 L86 test by HA5OB
-' November 8 passive buzzer support: "PWM 1,CO2ppm,25,100,75", Vbat %  plus
-'            regularly updated "battery level needed for Device Status Answer frame command"
-' November 9 BatteryLevelPayload data format to BCD
+'           V2_Micromite_GPS_LoRa_Mote_26.bas
+' November 19 End device and project rename to: Micromite GPS LoRa Mote	
+' November 9 BatteryLevelPayload data format to BCD	
+'            regularly updated "battery level needed for Device Status Answer frame command"	
+' November 8 passive buzzer support: "PWM 1,CO2ppm,25,100,75", Vbat %  plus	
+' November 5 L86 test by HA5OB	
+' October 23 buzzer to RB2	
+' October 17 "C" channel set service mode bug fix, batter	
+' October 2 small message changes	
+' September 3 RN2483 read by timeout, red flash during transmission and green flash before	
+' August 29 switch off LEDS before cpu sleep 	
+' August 14 power consumption optimization and final port selection	
+' August 11 MCP9800 one-shot measurement	
+' August 10 power consumption optimization	
+' August 7 external humidity, temperature and CO2 option	
+' August 3 push button by polling	
+' August 1/2 continue sensor mode	
+' July 24 continue sensor mode + altitude calculation fix	
+' July 23 continue sensor mode	
+' July 22 continue sensor mode	
+' July 21 short button press to upload sensor data, long for changing GPS / sensor modes	
+' July 20 CO2 sensor service mode for COM3/COM4	
+' July 19 improving COM port selection	
+' July 17	
 ' Holman Tamas ChipCAD Kft.
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
   OPTION EXPLICIT
   OPTION AUTORUN ON
   OPTION DEFAULT INTEGER
   CPU 10
-    ? "Micromite GPS Mote 2v25 November 9 2016"
+  ? "Micromite GPS LoRa Mote 2v26 November 19 2016"
 ' Reset click modules
   CONST FORCE=2                               'digital O
   CONST GPSPWR=3                              'digital O
