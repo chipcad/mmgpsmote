@@ -1,5 +1,7 @@
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-'           V2_Micromite_GPS_LoRa_Mote_26.bas
+'           V2_Micromite_GPS_LoRa_Mote_27.bas
+' November 27 after CTS/DTR cutting RNReset (23) controls reset of RN2483 module
+'             BatteryLevelPayload wrong BCD format corrected
 ' November 19 End device and project rename to: Micromite GPS LoRa Mote	
 ' November 9 BatteryLevelPayload data format to BCD	
 '            regularly updated "battery level needed for Device Status Answer frame command"	
@@ -29,7 +31,7 @@
   OPTION AUTORUN ON
   OPTION DEFAULT INTEGER
   CPU 10
-  ? "Micromite GPS LoRa Mote 2v26 November 19 2016"
+  ? "Micromite GPS LoRa Mote 2v27 November 27 2016"
 ' Reset click modules
   CONST FORCE=2                               'digital O
   CONST GPSPWR=3                              'digital O
@@ -46,8 +48,7 @@
   CONST SCL=18                                'digital O or SDA I2C
   CONST TX1=21                                'digital O or TX1
   CONST RX1=22                                'digital O or RX1
-  CONST CTS1=23                               'digital O or CTS1
-  CONST RTS1=24                               'digital O or RTS1
+  CONST RNReset=23                            'digital O or RNReset
   CONST PUSH=25                               'digital I
   CONST PPS=26                                'digital I
   CONST LEDON=0,LEDOFF=1
@@ -68,6 +69,10 @@
   PIN(PGC)=1: SETPIN PGC,DOUT:PAUSE 100
   PIN(LVP)=1: SETPIN LVP,DOUT:PAUSE 100
   PIN(TX1)=1: SETPIN TX1,DOUT:PAUSE 100
+  PIN(RNReset)=1: SETPIN RNReset,DOUT:PAUSE 100 ' resets RN2483 module
+  PIN(RNReset)=0:PAUSE 100                        ' resets RN2483 module
+  PIN(RNReset)=1:PAUSE 100                        ' resets RN2483 module
+  SETPIN RNReset,OFF                              ' resets RN2483 module
   SETPIN PUSH,DIN,PULLUP
 ' variables 
   DIM arg$(20), i, t=0,x$, y$, h$, TIME1$,LatDD, LatMM, LatMMMM, LonDDD, LonMM, LonMMMM, NrSat
@@ -704,7 +709,7 @@ SUB BatteryLevel
   IF PinBat!>4.2 THEN PinBat!=4.2
   BatteryLevelHeader=INT((PinBat!-3.5)/(4.2-3.5)*253)+1
   BatteryLevelPayload=INT((PinBat!-3.5)/(4.2-3.5)*98)+1
-  BatteryLevelPayload=INT(BatteryLevelPayload/10)*16+BatteryLevelPayload\10
+  BatteryLevelPayload=BatteryLevelPayload\10*16+INT((BatteryLevelPayload/10-BatteryLevelPayload\10)*10)
   ? PinBat!,"V BatteryLevelHeader:",
   ? HEX$(BatteryLevelHeader,2)," BatteryLevelPayload:",
   ? HEX$(BatteryLevelPayload,2)
