@@ -1,7 +1,11 @@
+
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-'           V2_Micromite_GPS_LoRa_Mote_27.bas
+'           V2_Micromite_GPS_LoRa_Mote_28.bas
+' November 28 Corrected Sensor Mode to GPS Mode switching
+'             CONST NumberOfUncnfInSensorMode=10 instead of 4 to lower GW transmission
 ' November 27 after CTS/DTR cutting RNReset (23) controls reset of RN2483 module
 '             BatteryLevelPayload wrong BCD format corrected
+'             Corrected switch routine from Sensor Mode switch to GPS Mode
 ' November 19 End device and project rename to: Micromite GPS LoRa Mote	
 ' November 9 BatteryLevelPayload data format to BCD	
 '            regularly updated "battery level needed for Device Status Answer frame command"	
@@ -31,7 +35,7 @@
   OPTION AUTORUN ON
   OPTION DEFAULT INTEGER
   CPU 10
-  ? "Micromite GPS LoRa Mote 2v27 November 27 2016"
+  ? "Micromite GPS LoRa Mote 2v28 November 28 2016"
 ' Reset click modules
   CONST FORCE=2                               'digital O
   CONST GPSPWR=3                              'digital O
@@ -57,7 +61,7 @@
   CONST MaxTime=300                           '300 seconds maximum GPS sensor operation time 
   CONST CO2OperatingTime=1500                 'millisecond
   CONST MCP9800Addr=&H4B
-  CONST NumberOfUncnfInSensorMode=3
+  CONST NumberOfUncnfInSensorMode=10
   PIN(GPSPWR)=0: SETPIN GPSPWR,DOUT:PAUSE 100
   PIN(FORCE)=1: SETPIN FORCE,DOUT,OC:PAUSE 100  
   SETPIN BATT,AIN
@@ -447,28 +451,19 @@ SensorMode1:
   CPU 5
   PAUSE 500
   BatteryLevel
-  IF PIN(PUSH)=0 THEN
-    PIN(LEDG)=LEDON
-    PAUSE 1000
-    PIN(LEDG)=LEDOFF
-    GOTO ChangeToGPSMode
-  ENDIF
-  If ButtonPressedByApplicationServer=2 THEN
-    ButtonPressedByApplicationServer=0
-    PIN(LEDG)=LEDON
-    PAUSE 1000
-    PIN(LEDG)=LEDOFF
-    GOTO ChangeToGPSMode
-  ENDIF
+  IF PIN(PUSH)=0 THEN GOTO ChangeToGPSMode
+  If ButtonPressedByApplicationServer=2 THEN GOTO ChangeToGPSMode
   CO2Measure
   i=i-1
-  IF i=0 THEN
-  SensorPayloadToLoRaWAN
-  GOTO SensorMode
-  ENDIF
+  IF i=0 THEN SensorPayloadToLoRaWAN
+  IF i=0 THEN GOTO SensorMode
   IF CO2ppm>CO2limit THEN SensorPayloadToLoRaWAN
   GOTO SensorMode1
 ChangeToGPSMode:
+  PIN(LEDG)=LEDON
+  PAUSE 1000
+  PIN(LEDG)=LEDOFF
+  ButtonPressedByApplicationServer=0
   SETPIN WAKEUP,OFF
   PIN(GPSPWR)=0
   PIN(FORCE)=1
