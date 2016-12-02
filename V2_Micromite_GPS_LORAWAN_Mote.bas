@@ -1,6 +1,8 @@
 
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-'           V2_Micromite_GPS_LoRa_Mote_28.bas
+'           V2_Micromite_GPS_LoRa_Mote_29.bas
+' December 2  Must update Micromite 5v36 firmware to fix sleep overcurrent issue
+'             Removed CPU 48 and CPU 5 workaround instructions 
 ' November 28 Corrected Sensor Mode to GPS Mode switching
 '             CONST NumberOfUncnfInSensorMode=10 instead of 4 to lower GW transmission
 ' November 27 after CTS/DTR cutting RNReset (23) controls reset of RN2483 module
@@ -35,7 +37,7 @@
   OPTION AUTORUN ON
   OPTION DEFAULT INTEGER
   CPU 10
-  ? "Micromite GPS LoRa Mote 2v28 November 28 2016"
+  ? "Micromite GPS LoRa Mote 2v29 December 2 2016"
 ' Reset click modules
   CONST FORCE=2                               'digital O
   CONST GPSPWR=3                              'digital O
@@ -342,11 +344,9 @@ NoSend2:
   ENDIF
   IF t<MaxTime THEN
   ? "CPU sleeps ShortSleepTime =";ShortSleepTime;"sec. Left active time =";MaxTime-t                       ' to avoid floating input 'DEBUG
-  CPU 48
   PIN(LEDG)=LEDOFF
   Pin(LEDR)=LEDOFF
   CPU Sleep ShortSleepTime
-  CPU 5
   LEDFlash$="G"
   BatteryLevel
   PAUSE 500
@@ -444,11 +444,9 @@ SensorMode:
   i=LongSleepTime
 SensorMode1:
   ? "CPU sleeps ";i;" minutes" 'DEBUG
-  CPU 48
   PIN(LEDG)=LEDOFF
   Pin(LEDR)=LEDOFF 
   CPU SLEEP 58
-  CPU 5
   PAUSE 500
   BatteryLevel
   IF PIN(PUSH)=0 THEN GOTO ChangeToGPSMode
