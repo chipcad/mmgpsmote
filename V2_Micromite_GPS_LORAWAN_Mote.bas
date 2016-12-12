@@ -1,6 +1,9 @@
 
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-'           V2_Micromite_GPS_LoRa_Mote_29.bas
+'           V2_Micromite_GPS_LoRa_Mote_30.bas
+' December 11 Improved data rate change from  fixed DR=0 of GPS mode to adaptive data rate of Sensor Mode 
+'             CO2 measurement is allowed before sleep if CO2limit<>65535
+'             correction of BatteryLevelPayload BCD 
 ' December 2  Must update Micromite 5v36 firmware to fix sleep overcurrent issue
 '             Removed CPU 48 and CPU 5 workaround instructions 
 ' November 28 Corrected Sensor Mode to GPS Mode switching
@@ -37,7 +40,7 @@
   OPTION AUTORUN ON
   OPTION DEFAULT INTEGER
   CPU 10
-  ? "Micromite GPS LoRa Mote 2v29 December 2 2016"
+  ? "Micromite GPS LoRa Mote 2v30 December 12 2016"
 ' Reset click modules
   CONST FORCE=2                               'digital O
   CONST GPSPWR=3                              'digital O
@@ -329,7 +332,7 @@ GPSbackup:
 NoSend2:
   SETPIN WAKEUP,OFF 
   PIN(WAKEUP)=0:SETPIN WAKEUP,DOUT 
-  CO2Measure
+  IF CO2limit<>65535 THEN CO2Measure
   IF CO2ppm>CO2Limit THEN                             ' 1sec bip on CO2ppm frequency
   ? "bip-bip" 'DEBUG
   SETPIN PGD,OFF
@@ -425,9 +428,11 @@ ChangeToSensor:
   WaitsTillRNAnswers
   WaitsTillRNAnswers
   ? "mac tx cnf 1 01" 'DEBUG
+  PAUSE 5000
   PRINT #1,"mac tx cnf 1 01":PAUSE 50
   WaitsTillRNAnswers
   WaitsTillRNAnswers
+  pause 5000
   ? "mac tx cnf 1 02" 'DEBUG
   PRINT #1,"mac tx cnf 1 02":PAUSE 50
   WaitsTillRNAnswers
@@ -451,7 +456,7 @@ SensorMode1:
   BatteryLevel
   IF PIN(PUSH)=0 THEN GOTO ChangeToGPSMode
   If ButtonPressedByApplicationServer=2 THEN GOTO ChangeToGPSMode
-  CO2Measure
+  IF CO2limit<>65535 THEN CO2Measure
   i=i-1
   IF i=0 THEN SensorPayloadToLoRaWAN
   IF i=0 THEN GOTO SensorMode
@@ -702,7 +707,7 @@ SUB BatteryLevel
   IF PinBat!>4.2 THEN PinBat!=4.2
   BatteryLevelHeader=INT((PinBat!-3.5)/(4.2-3.5)*253)+1
   BatteryLevelPayload=INT((PinBat!-3.5)/(4.2-3.5)*98)+1
-  BatteryLevelPayload=BatteryLevelPayload\10*16+INT((BatteryLevelPayload/10-BatteryLevelPayload\10)*10)
+  BatteryLevelPayload=BatteryLevelPayload\10*16+(BatteryLevelPayload/10-BatteryLevelPayload\10)*10
   ? PinBat!,"V BatteryLevelHeader:",
   ? HEX$(BatteryLevelHeader,2)," BatteryLevelPayload:",
   ? HEX$(BatteryLevelPayload,2)
