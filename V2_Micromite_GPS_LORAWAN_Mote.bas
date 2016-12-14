@@ -1,7 +1,8 @@
-
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-'           V2_Micromite_GPS_LoRa_Mote_30.bas
-' December 11 Improved data rate change from  fixed DR=0 of GPS mode to adaptive data rate of Sensor Mode 
+'           V2_Micromite_GPS_LoRa_Mote_31.bas
+' December 14 20msec break condition to RN2483 insted of 2msec to improve auto-baud rate detection
+'             limiting external temperature measurement data to 8bit binary format instead of wrong 64bit 
+' December 12 Improved data rate change from  fixed DR=0 of GPS mode to adaptive data rate of Sensor Mode 
 '             CO2 measurement is allowed before sleep if CO2limit<>65535
 '             correction of BatteryLevelPayload BCD 
 ' December 2  Must update Micromite 5v36 firmware to fix sleep overcurrent issue
@@ -40,7 +41,7 @@
   OPTION AUTORUN ON
   OPTION DEFAULT INTEGER
   CPU 10
-  ? "Micromite GPS LoRa Mote 2v30 December 12 2016"
+  ? "Micromite GPS LoRa Mote 2v31 December 14 2016"
 ' Reset click modules
   CONST FORCE=2                               'digital O
   CONST GPSPWR=3                              'digital O
@@ -596,9 +597,9 @@ SUB RN2483OPEN
   PIN(SELA)=0
   PIN(SELB)=0
   PIN(TX1)=0
-  PAUSE 2
+  PAUSE 20
   PIN(TX1)=1
-  PAUSE 2
+  PAUSE 20
   SETPIN TX1,OFF
   OPEN "COM1:57600, 256, RXINT, 1" AS #1
   x$=INPUT$(200,#1)
@@ -646,7 +647,7 @@ SUB SensorPayloadToLoRaWAN
   IF MID$(CO2dat$,2,1)="Z" THEN payload$=payload$+HEX$(VAL(MID$(CO2dat$,4,5)),4)
   IF MID$(CO2dat$,18,1)="Z" THEN payload$=payload$+HEX$(VAL(MID$(CO2dat$,20,5)),4)
   IF MID$(CO2dat$,2,1)="H" THEN payload$=payload$+HEX$(VAL(MID$(CO2dat$,4,5)),4)
-  IF MID$(CO2dat$,10,1)="T" THEN payload$=payload$+HEX$((VAL(MID$(CO2dat$,12,5))-1000)\10,2)
+  IF MID$(CO2dat$,10,1)="T" THEN payload$=payload$+RIGHT$(HEX$((VAL(MID$(CO2dat$,12,5))-1000)\10,2),2)
   CPU 10
   RNWakeup
   PAUSE 500
