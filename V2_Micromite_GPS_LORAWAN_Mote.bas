@@ -1,5 +1,6 @@
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-'           V2_Micromite_GPS_LoRa_Mote_31.bas
+'           V2_Micromite_GPS_LoRa_Mote_32.bas
+' December 15 corrected CO2 reading in sensor mode
 ' December 14 20msec break condition to RN2483 insted of 2msec to improve auto-baud rate detection
 '             limiting external temperature measurement data to 8bit binary format instead of wrong 64bit 
 ' December 12 Improved data rate change from  fixed DR=0 of GPS mode to adaptive data rate of Sensor Mode 
@@ -41,7 +42,7 @@
   OPTION AUTORUN ON
   OPTION DEFAULT INTEGER
   CPU 10
-  ? "Micromite GPS LoRa Mote 2v31 December 14 2016"
+  ? "Micromite GPS LoRa Mote 2v32 December 15 2016"
 ' Reset click modules
   CONST FORCE=2                               'digital O
   CONST GPSPWR=3                              'digital O
@@ -457,7 +458,12 @@ SensorMode1:
   BatteryLevel
   IF PIN(PUSH)=0 THEN GOTO ChangeToGPSMode
   If ButtonPressedByApplicationServer=2 THEN GOTO ChangeToGPSMode
+  IF LongSleepTime=1 THEN
+  CO2Measure
+  GOTO  SensorMode2
+  ENDIF
   IF CO2limit<>65535 THEN CO2Measure
+  SensorMode2:
   i=i-1
   IF i=0 THEN SensorPayloadToLoRaWAN
   IF i=0 THEN GOTO SensorMode
