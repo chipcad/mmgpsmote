@@ -1,5 +1,5 @@
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-'           V2_Micromite_GPS_LoRa_Mote_32.bas
+'           V2_Micromite_GPS_LoRa_Mote_34.bas
 ' December 15 corrected CO2 reading in sensor mode
 ' December 14 20msec break condition to RN2483 insted of 2msec to improve auto-baud rate detection
 '             limiting external temperature measurement data to 8bit binary format instead of wrong 64bit 
@@ -42,7 +42,7 @@
   OPTION AUTORUN ON
   OPTION DEFAULT INTEGER
   CPU 10
-  ? "Micromite GPS LoRa Mote 2v32 December 15 2016"
+  ? "Micromite GPS LoRa Mote 2v34 December 17 2016"
 ' Reset click modules
   CONST FORCE=2                               'digital O
   CONST GPSPWR=3                              'digital O
@@ -110,7 +110,7 @@
   I2C CLOSE    
   RN2483OPEN
   PAUSE 200
-  PRINT #1,"Usys reset":PAUSE 50
+  PRINT #1,"Usys reset" : PAUSE 50
   WaitsTillRNAnswers
   PAUSE 1000
   x$=INPUT$(200,#1)
@@ -319,7 +319,6 @@ GPSbackup:
   PIN(TX1)=1 : SETPIN TX1,DOUT
   CPU 10
   RNWakeup
-  PAUSE 200
   IF ValidCoordinatesToSend=1 THEN
   payload$="mac tx uncnf 202 "+HEX$(LAT,6)+HEX$(LON,6)+HEX$(ALT,4)+HEX$(HDOPinteger,2)
   ? payload$ 'DEBUG
@@ -418,7 +417,6 @@ ChangeToSensor:
   PIN(GPSPWR)=1
   CPU 10
   RNWakeup
-  PAUSE 2000
   ? "mac set dr 5" 'DEBUG
   PRINT #1,"mac set dr 5":PAUSE 50
   WaitsTillRNAnswers
@@ -480,7 +478,6 @@ ChangeToGPSMode:
     CPU 10
     ? "change to GPS mode" 'DEBUG
     RNWakeup 
-    PAUSE 1000
     ? "mac set dr 0" 'DEBUG
     PRINT #1,"mac set dr 0":PAUSE 50
     WaitsTillRNAnswers
@@ -540,13 +537,18 @@ SUB OneSecTick
 END SUB
   ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
   SUB RXINT             ' RN2483 RX ISR in background
+  Local y$
   RNReceived=1
-  pause 8
-  x$=INPUT$(200,#1)
-  IF RIGHT$(x$,1)=CHR$(10) THEN X$=left$(x$,len(x$)-2)
+  x$=""
+  ReadRN:
+  y$=INPUT$(1,#1)
+  IF y$="" THEN GOTO ReadRN
+  x$=x$+y$
+  if y$<>chr$(10) THEN GOTO ReadRN
+  x$=left$(x$,len(x$)-2) 'DEBUG
   ? x$                                                 'DEBUG
   IF LEN(x$)<> 21 THEN END SUB
-  IF LEFT$(x$,11)="mac_rx 209 " THEN
+  IF LEFT$(x$,11)<>"mac_rx 209 " THEN END SUB
   IF MID$(x$,12,2)<>"00" THEN ButtonPressedByApplicationServer=VAL(MID$(x$,12,2))        ' push button control from application server
   ShortSleepTime=VAL("&H"+MID$(x$,14,2))+ShortSleepTimeMin                                    ' seconds
   LongSleepTime=VAL("&H"+MID$(x$,16,2))+LongSleepTimeMin                                  ' minutes
@@ -555,7 +557,6 @@ END SUB
   ? "ShortSleepTime=";ShortSleepTime;" seconds" 'DEBUG
   ? "LongSleepTime=";LongSleepTime;" minutes" 'DEBUG
   ? "CO2limit=";CO2limit;" ppm" 'DEBUG
-  ENDIF
   END SUB
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''  
 SUB WakeupInt                                         ' motion sensor
@@ -594,8 +595,9 @@ SUB RNSleep                                         ' RN2483 to sleep mode
 SUB RNWakeup
   RN2483OPEN
   PAUSE 200
-  PRINT #1,"Usys get ver":PAUSE 50
-  PAUSE 1000
+  PRINT #1,"Usys get ver" : PAUSE 50
+  WaitsTillRNAnswers
+  PAUSE 300
   END SUB
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 SUB RN2483OPEN
@@ -607,7 +609,7 @@ SUB RN2483OPEN
   PIN(TX1)=1
   PAUSE 20
   SETPIN TX1,OFF
-  OPEN "COM1:57600, 256, RXINT, 1" AS #1
+  OPEN "COM1:57600, 256, RXINT, 3" AS #1
   x$=INPUT$(200,#1)
   END SUB
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''  
@@ -656,7 +658,6 @@ SUB SensorPayloadToLoRaWAN
   IF MID$(CO2dat$,10,1)="T" THEN payload$=payload$+RIGHT$(HEX$((VAL(MID$(CO2dat$,12,5))-1000)\10,2),2)
   CPU 10
   RNWakeup
-  PAUSE 500
   ? payload$ 'DEBUG
   LEDFlash$="R"
   PRINT #1,payload$:PAUSE 50
