@@ -1,5 +1,6 @@
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-'           V2_Micromite_GPS_LoRa_Mote_34.bas
+'           V2_Micromite_GPS_LoRa_Mote_35.bas
+' December 21 corrected CO2 reading in sensor mode
 ' December 15 corrected CO2 reading in sensor mode
 ' December 14 20msec break condition to RN2483 insted of 2msec to improve auto-baud rate detection
 '             limiting external temperature measurement data to 8bit binary format instead of wrong 64bit 
@@ -42,7 +43,7 @@
   OPTION AUTORUN ON
   OPTION DEFAULT INTEGER
   CPU 10
-  ? "Micromite GPS LoRa Mote 2v34 December 17 2016"
+  ? "Micromite GPS LoRa Mote 2v35 December 21 2016"
 ' Reset click modules
   CONST FORCE=2                               'digital O
   CONST GPSPWR=3                              'digital O
@@ -456,21 +457,19 @@ SensorMode1:
   BatteryLevel
   IF PIN(PUSH)=0 THEN GOTO ChangeToGPSMode
   If ButtonPressedByApplicationServer=2 THEN GOTO ChangeToGPSMode
-  IF LongSleepTime=1 THEN
-  CO2Measure
-  GOTO  SensorMode2
-  ENDIF
-  IF CO2limit<>65535 THEN CO2Measure
-  SensorMode2:
+  IF i=1 or CO2limit<>65535 THEN CO2Measure
   i=i-1
-  IF i=0 THEN SensorPayloadToLoRaWAN
-  IF i=0 THEN GOTO SensorMode
+  IF i=0 THEN
+  SensorPayloadToLoRaWAN
+  GOTO SensorMode
+  ENDIF
   IF CO2ppm>CO2limit THEN SensorPayloadToLoRaWAN
   GOTO SensorMode1
 ChangeToGPSMode:
   PIN(LEDG)=LEDON
   PAUSE 1000
   PIN(LEDG)=LEDOFF
+  t=0                                 ' restart motion timer
   ButtonPressedByApplicationServer=0
   SETPIN WAKEUP,OFF
   PIN(GPSPWR)=0
