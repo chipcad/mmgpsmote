@@ -1,5 +1,6 @@
 ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-'           V2_Micromite_GPS_LoRa_Mote_35.bas
+'           V2_Micromite_GPS_LoRa_Mote_36.bas
+' December 27 Waits  OnePPSMax seconds (3) before reading GPS/GNSS coordinates
 ' December 21 corrected CO2 reading in sensor mode
 ' December 15 corrected CO2 reading in sensor mode
 ' December 14 20msec break condition to RN2483 insted of 2msec to improve auto-baud rate detection
@@ -43,7 +44,7 @@
   OPTION AUTORUN ON
   OPTION DEFAULT INTEGER
   CPU 10
-  ? "Micromite GPS LoRa Mote 2v35 December 21 2016"
+  ? "Micromite GPS LoRa Mote 2v36 December 27 2016"
 ' Reset click modules
   CONST FORCE=2                               'digital O
   CONST GPSPWR=3                              'digital O
@@ -70,6 +71,7 @@
   CONST CO2OperatingTime=1500                 'millisecond
   CONST MCP9800Addr=&H4B
   CONST NumberOfUncnfInSensorMode=10
+  CONST OnePPSMin=3
   PIN(GPSPWR)=0: SETPIN GPSPWR,DOUT:PAUSE 100
   PIN(FORCE)=1: SETPIN FORCE,DOUT,OC:PAUSE 100  
   SETPIN BATT,AIN
@@ -256,7 +258,7 @@ WaitsForPPS:
   ENDIF
   IF PIN(PUSH)=0 THEN GOTO ModeChangeByButton
   IF ButtonPressedByApplicationServer<>0 THEN GOTO ModeChangeByServer
-  IF OnePPS=0 THEN GOTO WaitsForPPS
+  IF OnePPS<=OnePPSMin THEN GOTO WaitsForPPS
   CPU 30                                            ' more MIPS
 ' L86 init
   GPSOPEN
@@ -375,6 +377,7 @@ NoSend2:
   OnePPS=0
   ? "CPU awake again" 'DEBUG
   PAUSE 100 
+  OnePPS=0
   goto WaitsForPPS
   ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ModeChangeByServer:
